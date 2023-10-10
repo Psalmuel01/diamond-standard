@@ -8,7 +8,7 @@ import {IERC721Receiver} from "node_modules/@openzeppelin/contracts/token/ERC721
 import {IERC721Metadata} from "node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
 import {Strings} from "node_modules/@openzeppelin/contracts/utils/Strings.sol";
-import {IERC165, ERC165} from "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
+// import {IERC165, ERC165} from "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {IERC721Errors} from "node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 
 import {LibDiamond} from "../libraries/LibDiamond.sol";
@@ -18,57 +18,43 @@ import {LibDiamond} from "../libraries/LibDiamond.sol";
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
  * {ERC721Enumerable}.
  */
-abstract contract ERC721 is
+contract ERC721Facet is
     Context,
-    ERC165,
+    // ERC165,
     IERC721,
     IERC721Metadata,
     IERC721Errors
 {
     using Strings for uint256;
 
-    // Token name
-    string private _name;
-
-    // Token symbol
-    string private _symbol;
-
-    mapping(uint256 tokenId => address) private _owners;
-
-    mapping(address owner => uint256) private _balances;
-
-    mapping(uint256 tokenId => address) private _tokenApprovals;
-
-    mapping(address owner => mapping(address operator => bool))
-        private _operatorApprovals;
-
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_) {
-        
-    }
+    constructor() {}
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(ERC165, IERC165) returns (bool) {
-        return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
+    // function supportsInterface(
+    //     bytes4 interfaceId
+    // ) public view virtual override(ERC165, IERC165) returns (bool) {
+    //     return
+    //         interfaceId == type(IERC721).interfaceId ||
+    //         interfaceId == type(IERC721Metadata).interfaceId ||
+    //         super.supportsInterface(interfaceId);
+    // }
 
     /**
      * @dev See {IERC721-balanceOf}.
      */
+
     function balanceOf(address owner) public view virtual returns (uint256) {
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
         if (owner == address(0)) {
             revert ERC721InvalidOwner(address(0));
         }
-        return _balances[owner];
+        return ds._balances[owner];
     }
 
     /**
@@ -82,14 +68,18 @@ abstract contract ERC721 is
      * @dev See {IERC721Metadata-name}.
      */
     function name() public view virtual returns (string memory) {
-        return _name;
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        return ds._name;
     }
 
     /**
      * @dev See {IERC721Metadata-symbol}.
      */
     function symbol() public view virtual returns (string memory) {
-        return _symbol;
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        return ds._symbol;
     }
 
     /**
@@ -148,7 +138,9 @@ abstract contract ERC721 is
         address owner,
         address operator
     ) public view virtual returns (bool) {
-        return _operatorApprovals[owner][operator];
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        return ds._operatorApprovals[owner][operator];
     }
 
     /**
@@ -203,7 +195,9 @@ abstract contract ERC721 is
      * `balanceOf(a)` must be equal to the number of tokens such that `_ownerOf(tokenId)` is `a`.
      */
     function _ownerOf(uint256 tokenId) internal view virtual returns (address) {
-        return _owners[tokenId];
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        return ds._owners[tokenId];
     }
 
     /**
@@ -212,7 +206,9 @@ abstract contract ERC721 is
     function _getApproved(
         uint256 tokenId
     ) internal view virtual returns (address) {
-        return _tokenApprovals[tokenId];
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        return ds._tokenApprovals[tokenId];
     }
 
     /**
@@ -267,8 +263,10 @@ abstract contract ERC721 is
      * remain consistent with one another.
      */
     function _increaseBalance(address account, uint128 value) internal virtual {
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
         unchecked {
-            _balances[account] += value;
+            ds._balances[account] += value;
         }
     }
 
@@ -288,6 +286,7 @@ abstract contract ERC721 is
         uint256 tokenId,
         address auth
     ) internal virtual returns (address) {
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         address from = _ownerOf(tokenId);
 
         // Perform (optional) operator check
@@ -301,17 +300,17 @@ abstract contract ERC721 is
             _approve(address(0), tokenId, address(0), false);
 
             unchecked {
-                _balances[from] -= 1;
+                ds._balances[from] -= 1;
             }
         }
 
         if (to != address(0)) {
             unchecked {
-                _balances[to] += 1;
+                ds._balances[to] += 1;
             }
         }
 
-        _owners[tokenId] = to;
+        ds._owners[tokenId] = to;
 
         emit Transfer(from, to, tokenId);
 
@@ -469,6 +468,8 @@ abstract contract ERC721 is
         address auth,
         bool emitEvent
     ) internal virtual {
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
         // Avoid reading the owner unless necessary
         if (emitEvent || auth != address(0)) {
             address owner = _requireOwned(tokenId);
@@ -487,7 +488,7 @@ abstract contract ERC721 is
             }
         }
 
-        _tokenApprovals[tokenId] = to;
+        ds._tokenApprovals[tokenId] = to;
     }
 
     /**
@@ -503,10 +504,12 @@ abstract contract ERC721 is
         address operator,
         bool approved
     ) internal virtual {
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
         if (operator == address(0)) {
             revert ERC721InvalidOperator(operator);
         }
-        _operatorApprovals[owner][operator] = approved;
+        ds._operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
 

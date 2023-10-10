@@ -47,6 +47,7 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
+
         //ERC721 Storage
         // Token name
         string _name;
@@ -56,6 +57,25 @@ library LibDiamond {
         mapping(address owner => uint256) _balances;
         mapping(uint256 tokenId => address) _tokenApprovals;
         mapping(address owner => mapping(address operator => bool)) _operatorApprovals;
+
+        //Marketplace Storage
+
+        struct Listing {
+            address token;
+            uint256 tokenId;
+            uint256 price;
+            bytes sig;
+            //slot3
+            uint256 deadline; //uint88?
+            address lister;
+            bool active;
+        }
+
+        mapping(uint256 => Listing) listings;
+        address admin;
+        uint256 listingId;
+
+
     }
 
     function diamondStorage()
@@ -81,11 +101,34 @@ library LibDiamond {
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
-    function setERC721Details(string memory _name, string memory _symbol) internal {
+    // function setERC20Details(
+    //     string memory _tokenName,
+    //     string memory _tokenSymbol
+    // ) internal {
+    //     DiamondStorage storage ds = diamondStorage();
+    //     ds.name = _tokenName;
+    //     ds.symbol = _tokenSymbol;
+    //     // ds.balances[msg.sender] = initialAmount;
+    //     // ds.decimals = _decimalUnits;
+    //     // ds.totalSupply = initialAmount * 10 ** uint256(ds.decimals);
+    // }
+
+    function setERC721Details(
+        string memory _name,
+        string memory _symbol
+    ) internal {
         DiamondStorage storage ds = diamondStorage();
         ds._name = _name;
         ds._symbol = _symbol;
     }
+
+    function setMarketplace(address _admin) internal {
+        DiamondStorage storage ds = diamondStorage();
+        ds.admin = msg.sender
+    }
+    
+
+
 
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;

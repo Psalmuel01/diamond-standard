@@ -12,9 +12,19 @@ import {LibDiamond} from "./libraries/LibDiamond.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 
 contract Diamond {
-    constructor(address _contractOwner, address _diamondCutFacet, string memory name_, string memory symbol_) payable {
+    constructor(
+        address _contractOwner,
+        address _diamondCutFacet,
+        string memory _tokenName,
+        string memory _tokenSymbol
+    ) payable // uint256 _initialAmount,
+    // uint8 _decimalUnits,
+    // string memory name_,
+    // string memory symbol_
+    {
         LibDiamond.setContractOwner(_contractOwner);
-        LibDiamond.setERC721Details(name_, symbol_);
+        // LibDiamond.setERC20Details(name_, symbol_);
+        LibDiamond.setERC721Details(_tokenName, _tokenSymbol);
 
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
@@ -26,6 +36,11 @@ contract Diamond {
             functionSelectors: functionSelectors
         });
         LibDiamond.diamondCut(cut, address(0), "");
+        // balances[msg.sender] = _initialAmount; // Give the creator all initial tokens
+        // totalSupply = _initialAmount; // Update total supply
+        // name = _tokenName; // Set the name for display purposes
+        // decimals = _decimalUnits; // Amount of decimals for display purposes
+        // symbol = _tokenSymbol; // Set the symbol for display purposes
         // _name = name_;
         // _symbol = symbol_;
     }

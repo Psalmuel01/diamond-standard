@@ -5,7 +5,7 @@ import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
 import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
-import "../contracts/facets/ERC20Facet.sol";
+// import "../contracts/facets/ERC20Facet.sol";
 import "../contracts/facets/ERC721Facet.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
@@ -16,20 +16,29 @@ contract DiamondDeployer is Test, IDiamondCut {
     DiamondCutFacet dCutFacet;
     DiamondLoupeFacet dLoupe;
     OwnershipFacet ownerF;
-    ERC20Facet erc20;
+    // ERC20Facet erc20;
     ERC721Facet erc721;
 
-    function testDeployDiamond() public {
+    function setUp() public {
         //deploy facets
         dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(this), address(dCutFacet), address(erc20), address(erc721));
+        diamond = new Diamond(
+            address(this),
+            address(dCutFacet),
+            "SamNft",
+            "SNFT"
+            // "Samuel",
+            // "SAM"
+        );
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
+        // erc20 = new ERC20Facet();
+        erc721 = new ERC721Facet();
 
         //upgrade diamond with facets
 
         //build cut struct
-        FacetCut[] memory cut = new FacetCut[](2);
+        FacetCut[] memory cut = new FacetCut[](3);
 
         cut[0] = (
             FacetCut({
@@ -44,6 +53,14 @@ contract DiamondDeployer is Test, IDiamondCut {
                 facetAddress: address(ownerF),
                 action: FacetCutAction.Add,
                 functionSelectors: generateSelectors("OwnershipFacet")
+            })
+        );
+
+        cut[2] = (
+            FacetCut({
+                facetAddress: address(erc721),
+                action: FacetCutAction.Add,
+                functionSelectors: generateSelectors("ERC721Facet")
             })
         );
 
@@ -64,6 +81,19 @@ contract DiamondDeployer is Test, IDiamondCut {
         bytes memory res = vm.ffi(cmd);
         selectors = abi.decode(res, (bytes4[]));
     }
+
+    function testName() public {
+        assertEq(ERC721Facet(address(diamond)).name(), "SamNft");
+    }
+
+    function testTransfer() public {
+        vm.prank(address(0x0));
+        ERC721Facet(address(diamond)).transferFrom(address(0x0), address(0x1), 1);
+        //assert balance
+        assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 1);
+    }
+
+    
 
     function diamondCut(
         FacetCut[] calldata _diamondCut,
