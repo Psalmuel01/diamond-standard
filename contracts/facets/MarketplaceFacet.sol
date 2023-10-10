@@ -6,7 +6,6 @@ import "node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "node_modules/@openzeppelin/contracts/utils/Address.sol";
 
 contract Marketplace {
-
     error NotOwner();
     error NotApproved();
     error AddressZero();
@@ -22,9 +21,7 @@ contract Marketplace {
     error PriceMismatch(); //why?
     error ListingExpired();
 
-    constructor() {
-        admin = msg.sender;
-    }
+    constructor() {}
 
     function createListing(Listing calldata l) public {
         //made returns(uint256 lid)

@@ -16,15 +16,15 @@ contract Diamond {
         address _contractOwner,
         address _diamondCutFacet,
         string memory _tokenName,
-        string memory _tokenSymbol
-    ) payable // uint256 _initialAmount,
-    // uint8 _decimalUnits,
+        string memory _tokenSymbol // uint256 _initialAmount,
+    ) payable // uint8 _decimalUnits,
     // string memory name_,
     // string memory symbol_
     {
         LibDiamond.setContractOwner(_contractOwner);
         // LibDiamond.setERC20Details(name_, symbol_);
         LibDiamond.setERC721Details(_tokenName, _tokenSymbol);
+        LibDiamond.setMarketplace();
 
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);

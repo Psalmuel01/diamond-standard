@@ -122,7 +122,7 @@ library LibDiamond {
         ds._symbol = _symbol;
     }
 
-    function setMarketplace(address _admin) internal {
+    function setMarketplace() internal {
         DiamondStorage storage ds = diamondStorage();
         ds.admin = msg.sender
     }
