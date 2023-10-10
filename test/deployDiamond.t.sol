@@ -5,6 +5,8 @@ import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
 import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
+import "../contracts/facets/ERC20Facet.sol";
+import "../contracts/facets/ERC721Facet.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
@@ -14,11 +16,13 @@ contract DiamondDeployer is Test, IDiamondCut {
     DiamondCutFacet dCutFacet;
     DiamondLoupeFacet dLoupe;
     OwnershipFacet ownerF;
+    ERC20Facet erc20;
+    ERC721Facet erc721;
 
     function testDeployDiamond() public {
         //deploy facets
         dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(this), address(dCutFacet));
+        diamond = new Diamond(address(this), address(dCutFacet), address(erc20), address(erc721));
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
 
