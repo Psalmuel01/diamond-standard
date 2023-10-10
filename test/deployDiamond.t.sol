@@ -7,6 +7,7 @@ import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
 // import "../contracts/facets/ERC20Facet.sol";
 import "../contracts/facets/ERC721Facet.sol";
+import "../contracts/facets/Marketplace.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
@@ -18,6 +19,7 @@ contract DiamondDeployer is Test, IDiamondCut {
     OwnershipFacet ownerF;
     // ERC20Facet erc20;
     ERC721Facet erc721;
+    Marketplace marketplace;
 
     function setUp() public {
         //deploy facets
@@ -34,11 +36,12 @@ contract DiamondDeployer is Test, IDiamondCut {
         ownerF = new OwnershipFacet();
         // erc20 = new ERC20Facet();
         erc721 = new ERC721Facet();
+        marketplace = new Marketplace();
 
         //upgrade diamond with facets
 
         //build cut struct
-        FacetCut[] memory cut = new FacetCut[](3);
+        FacetCut[] memory cut = new FacetCut[](4);
 
         cut[0] = (
             FacetCut({
@@ -61,6 +64,14 @@ contract DiamondDeployer is Test, IDiamondCut {
                 facetAddress: address(erc721),
                 action: FacetCutAction.Add,
                 functionSelectors: generateSelectors("ERC721Facet")
+            })
+        );
+
+        cut[3] = (
+            FacetCut({
+                facetAddress: address(marketplace),
+                action: FacetCutAction.Add,
+                functionSelectors: generateSelectors("Marketplace")
             })
         );
 
@@ -93,7 +104,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 1);
     }
 
-    
+
 
     function diamondCut(
         FacetCut[] calldata _diamondCut,
