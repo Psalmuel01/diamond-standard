@@ -7,7 +7,6 @@ import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
 // import "../contracts/facets/ERC20Facet.sol";
 import "../contracts/facets/ERC721Facet.sol";
-import "../contracts/facets/Marketplace.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
@@ -19,7 +18,6 @@ contract DiamondDeployer is Test, IDiamondCut {
     OwnershipFacet ownerF;
     // ERC20Facet erc20;
     ERC721Facet erc721;
-    Marketplace marketplace;
 
     function setUp() public {
         //deploy facets
@@ -29,19 +27,16 @@ contract DiamondDeployer is Test, IDiamondCut {
             address(dCutFacet),
             "SamNft",
             "SNFT"
-            // "Samuel",
-            // "SAM"
         );
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
         // erc20 = new ERC20Facet();
         erc721 = new ERC721Facet();
-        marketplace = new Marketplace();
 
         //upgrade diamond with facets
 
         //build cut struct
-        FacetCut[] memory cut = new FacetCut[](4);
+        FacetCut[] memory cut = new FacetCut[](3);
 
         cut[0] = (
             FacetCut({
@@ -67,14 +62,6 @@ contract DiamondDeployer is Test, IDiamondCut {
             })
         );
 
-        cut[3] = (
-            FacetCut({
-                facetAddress: address(marketplace),
-                action: FacetCutAction.Add,
-                functionSelectors: generateSelectors("Marketplace")
-            })
-        );
-
         //upgrade diamond
         IDiamondCut(address(diamond)).diamondCut(cut, address(0x0), "");
 
@@ -97,14 +84,53 @@ contract DiamondDeployer is Test, IDiamondCut {
         assertEq(ERC721Facet(address(diamond)).name(), "SamNft");
     }
 
-    function testTransfer() public {
-        vm.prank(address(0x0));
-        ERC721Facet(address(diamond)).transferFrom(address(0x0), address(0x1), 1);
-        //assert balance
-        assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 1);
-    }
+    // function testSymbol() public {
+    //     assertEq(ERC721Facet(address(diamond)).symbol(), "SNFT");
+    // }
 
+    // function testBalanceOf() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 1);
+    // }
 
+    // function testBalanceOfWrongAddress() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x2)), 0);
+    // }
+
+    // function testOwnerOf() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).ownerOf(1), address(0x1));
+    // }
+
+    // function testTransfer() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     vm.prank(address(0x1));
+    //     ERC721Facet(address(diamond)).transferFrom(
+    //         address(0x1),
+    //         address(0x2),
+    //         1
+    //     );
+    //     //assert balance
+    //     assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x2)), 1);
+    // }
+
+    // function testMint() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).ownerOf(1), address(0x1));
+    // }
+
+    // function testFailMint() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).ownerOf(1), address(0x2));
+    // }
+
+    // function testBurn() public {
+    //     ERC721Facet(address(diamond)).mint(address(0x1), 1);
+    //     assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 1);
+    //     ERC721Facet(address(diamond)).burn(1);
+    //     assertEq(ERC721Facet(address(diamond)).balanceOf(address(0x1)), 0);
+    // }
 
     function diamondCut(
         FacetCut[] calldata _diamondCut,

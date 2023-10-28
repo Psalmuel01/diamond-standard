@@ -7,6 +7,17 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
+struct Listing {
+    address token;
+    uint256 tokenId;
+    uint256 price;
+    bytes sig;
+    //slot3
+    uint256 deadline;
+    address lister;
+    bool active;
+}
+
 library LibDiamond {
     error InValidFacetCutAction();
     error NotDiamondOwner();
@@ -47,35 +58,17 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
-
         //ERC721 Storage
-        // Token name
         string _name;
-        // Token symbol
         string _symbol;
-        mapping(uint256 tokenId => address) _owners;
-        mapping(address owner => uint256) _balances;
-        mapping(uint256 tokenId => address) _tokenApprovals;
-        mapping(address owner => mapping(address operator => bool)) _operatorApprovals;
-
+        mapping(uint256 => address) _owners;
+        mapping(address => uint256) _balances;
+        mapping(uint256 => address) _tokenApprovals;
+        mapping(address => mapping(address => bool)) _operatorApprovals;
         //Marketplace Storage
-
-        struct Listing {
-            address token;
-            uint256 tokenId;
-            uint256 price;
-            bytes sig;
-            //slot3
-            uint256 deadline; //uint88?
-            address lister;
-            bool active;
-        }
-
         mapping(uint256 => Listing) listings;
         address admin;
         uint256 listingId;
-
-
     }
 
     function diamondStorage()
@@ -124,11 +117,8 @@ library LibDiamond {
 
     function setMarketplace() internal {
         DiamondStorage storage ds = diamondStorage();
-        ds.admin = msg.sender
+        ds.admin = msg.sender;
     }
-    
-
-
 
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;
